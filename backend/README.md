@@ -9,3 +9,9 @@
     "password": "123"
 }
 
+{
+    "name": "Jude Bellingham",
+    "email": "jude@test.com",
+    "password": "123456"
+}
+
