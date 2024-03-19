@@ -5,7 +5,7 @@ import Logo from './shared/Logo';
 import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
-  const auth = useAuth();
+  const auth = useAuth();  
 
   return (
     <AppBar
