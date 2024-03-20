@@ -1,31 +1,57 @@
-import React from 'react';
-import { Avatar, Box, Button, Typography } from '@mui/material';
+import { useRef, useState } from 'react';
+import { Avatar, Box, Button, IconButton, Typography } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { red } from '@mui/material/colors';
+import ChatItem from '../components/chat/ChatItem';
+import { IoMdSend } from 'react-icons/io';
+import { sendChatRequest } from '../helpers/api';
 
-const chatMessages = [
-  { role: 'user', content: 'Hi there!' },
-  { role: 'assistant', content: 'Hello! How can I assist you today?' },
-  { role: 'user', content: 'I need help with my order.' },
-  {
-    role: 'assistant',
-    content: 'Sure, could you please provide me with your order number?',
-  },
-  { role: 'user', content: 'My order number is 123456.' },
-  {
-    role: 'assistant',
-    content: 'Thank you. What seems to be the issue with your order?',
-  },
-  { role: 'user', content: 'The item I received is damaged.' },
-  {
-    role: 'assistant',
-    content:
-      "I'm sorry to hear that. Let me check your order details and see what we can do to help.",
-  },
-];
+// const chatMessages = [
+//   { role: 'user', content: 'Hi there!' },
+//   { role: 'assistant', content: 'Hello! How can I assist you today?' },
+//   { role: 'user', content: 'I need help with my order.' },
+//   {
+//     role: 'assistant',
+//     content: 'Sure, could you please provide me with your order number?',
+//   },
+//   { role: 'user', content: 'My order number is 123456.' },
+//   {
+//     role: 'assistant',
+//     content: 'Thank you. What seems to be the issue with your order?',
+//   },
+//   { role: 'user', content: 'The item I received is damaged.' },
+//   {
+//     role: 'assistant',
+//     content:
+//       "I'm sorry to hear that. Let me check your order details and see what we can do to help.",
+//   },
+// ];
+
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+}
 
 const Chat = () => {
   const auth = useAuth();
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleSubmit = async () => {
+    const content = inputRef.current?.value as string;
+    if (inputRef && inputRef.current) {
+      inputRef.current?.value === '';
+    }
+
+    const newMessage: Message = {
+      role: 'user',
+      content,
+    };
+    setChatMessages((prev) => [...prev, newMessage]);
+    const chatData = await sendChatRequest(content);
+    setChatMessages([...chatData.chats])
+  };
+
   return (
     <Box
       sx={{
@@ -142,12 +168,49 @@ const Chat = () => {
             overflowX: 'hidden',
             overflowY: 'auto',
             scrollBehavior: 'smooth',
+            marginBottom: 3,
           }}
         >
-          {chatMessages.map((chat) => <div>
-            {chat.content}
-          </div>)}
+          {chatMessages.map((chat, index) => (
+            <div>
+              <ChatItem content={chat.content} role={chat.role} key={index} />
+            </div>
+          ))}
         </Box>
+        <div
+          style={{
+            width: '100%',
+            padding: 20,
+            borderRadius: 8,
+            backgroundColor: 'rgb(17,27,39)',
+            display: 'flex',
+            margin: 'auto',
+          }}
+        >
+          {''}
+          <input
+            ref={inputRef}
+            type='text'
+            style={{
+              width: '100%',
+              backgroundColor: 'transparent',
+              padding: 10,
+              border: 'none',
+              outline: 'none',
+              color: 'white',
+              fontSize: 20,
+            }}
+          />
+          <IconButton
+            onClick={handleSubmit}
+            sx={{
+              ml: 'auto',
+              color: 'white',
+            }}
+          >
+            {<IoMdSend />}
+          </IconButton>
+        </div>
       </Box>
     </Box>
   );
