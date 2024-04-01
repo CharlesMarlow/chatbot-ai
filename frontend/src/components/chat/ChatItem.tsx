@@ -43,6 +43,8 @@ const ChatItem = ({
         bgcolor: '#004d5612',
         my: 2,
         gap: 2,
+        borderRadius: 2,
+        my: 1,
       }}
     >
       <Avatar
@@ -89,6 +91,7 @@ const ChatItem = ({
         bgcolor: '#004d56',
         gap: 2,
         my: 2,
+        borderRadius: 2,
       }}
     >
       <Avatar

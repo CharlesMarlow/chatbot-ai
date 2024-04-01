@@ -148,3 +148,33 @@ export const verifyUser = async (req, res, next) => {
     });
   }
 };
+
+export const userLogout = async (req, res, next) => {
+  try {
+    // Token check
+    const user = await User.findById(res.locals.jwtData.id);
+    if (!user)
+      return res.status(404).send('User not found OR Token malfunction');
+
+    if (user._id.toString !== res.locals.jwtData.id) {
+      return res.status(401).send("Permissions didn't match");
+    }
+
+    res.clearCookie(COOKIE_NAME, {
+      httpOnly: true,
+      domain: 'localhost',
+      signed: true,
+      path: '/',
+    });
+
+    return res.status(200).json({
+      message: 'User cookie cleared',
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      message: 'Error from user logout',
+      cause: error.message,
+    });
+  }
+};

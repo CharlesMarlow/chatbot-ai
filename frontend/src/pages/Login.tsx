@@ -4,9 +4,18 @@ import { toast } from 'react-hot-toast';
 
 import CustomInput from '../components/shared/CustomInput';
 import { useAuth } from '../context/AuthContext';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const auth = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (auth?.user) {
+      return navigate('/chat');
+    }
+  }, [auth]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);

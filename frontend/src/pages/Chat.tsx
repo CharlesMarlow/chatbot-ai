@@ -1,41 +1,56 @@
-import { useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Avatar, Box, Button, IconButton, Typography } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { red } from '@mui/material/colors';
 import ChatItem from '../components/chat/ChatItem';
 import { IoMdSend } from 'react-icons/io';
-import { sendChatRequest } from '../helpers/api';
-
-// const chatMessages = [
-//   { role: 'user', content: 'Hi there!' },
-//   { role: 'assistant', content: 'Hello! How can I assist you today?' },
-//   { role: 'user', content: 'I need help with my order.' },
-//   {
-//     role: 'assistant',
-//     content: 'Sure, could you please provide me with your order number?',
-//   },
-//   { role: 'user', content: 'My order number is 123456.' },
-//   {
-//     role: 'assistant',
-//     content: 'Thank you. What seems to be the issue with your order?',
-//   },
-//   { role: 'user', content: 'The item I received is damaged.' },
-//   {
-//     role: 'assistant',
-//     content:
-//       "I'm sorry to hear that. Let me check your order details and see what we can do to help.",
-//   },
-// ];
+import { deleteUserChats, getUserChats, sendChatRequest } from '../helpers/api';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 type Message = {
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
-}
+};
 
 const Chat = () => {
   const auth = useAuth();
+  const navigate = useNavigate();
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (auth?.isLoggedIn && auth.user) {
+      toast.loading('Loading chats', { id: 'loadchats' });
+      getUserChats()
+        .then((data) => {
+          setChatMessages([...data.chats]);
+          toast.success('Chats loaded successfully', { id: 'loadchats' });
+        })
+        .catch((err) => {
+          console.log(err);
+          toast.error('Loading chats failed', { id: 'loadchats' });
+        });
+    }
+  }, [auth]);
+
+  useEffect(() => {
+    if (!auth?.user) {
+      return navigate('/login');
+    }
+  }, [auth]);
+
+  const handleDelete = async () => {
+    try {
+      toast.loading('Deleting chats', { id: 'deleteChats' });
+      await deleteUserChats();
+      setChatMessages([]);
+      toast.success('Deleted chats successfully', { id: 'deleteChats' });
+    } catch (error) {
+      console.log(error);
+      toast.error('Deleting chats failed', { id: 'deleteChats' });
+    }
+  };
 
   const handleSubmit = async () => {
     const content = inputRef.current?.value as string;
@@ -49,7 +64,7 @@ const Chat = () => {
     };
     setChatMessages((prev) => [...prev, newMessage]);
     const chatData = await sendChatRequest(content);
-    setChatMessages([...chatData.chats])
+    setChatMessages([...chatData.chats]);
   };
 
   return (
@@ -116,6 +131,7 @@ const Chat = () => {
             Ask any question you'd like!
           </Typography>
           <Button
+            onClick={handleDelete}
             sx={{
               width: 200,
               my: 'auto',
@@ -180,7 +196,6 @@ const Chat = () => {
         <div
           style={{
             width: '100%',
-            padding: 20,
             borderRadius: 8,
             backgroundColor: 'rgb(17,27,39)',
             display: 'flex',
@@ -194,7 +209,7 @@ const Chat = () => {
             style={{
               width: '100%',
               backgroundColor: 'transparent',
-              padding: 10,
+              padding: 30,
               border: 'none',
               outline: 'none',
               color: 'white',
@@ -206,6 +221,7 @@ const Chat = () => {
             sx={{
               ml: 'auto',
               color: 'white',
+              mx: 1,
             }}
           >
             {<IoMdSend />}

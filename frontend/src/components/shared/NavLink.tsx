@@ -9,9 +9,10 @@ type NavLinkProps = {
   onClick?: () => Promise<void>;
 };
 
-const NavLink: FC<NavLinkProps> = ({ bg, to, text, textColor }) => {
+const NavLink: FC<NavLinkProps> = ({ bg, to, text, textColor, onClick }) => {
   return (
     <Link
+      onClick={onClick}
       className='nav-link'
       to={to}
       style={{
